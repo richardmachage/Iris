@@ -8,6 +8,10 @@ espressoCore = "3.5.1"
 lifecycleRuntimeKtx = "2.8.1"
 activityCompose = "1.9.0"
 composeBom = "2023.08.00"
+hilt = "2.50"
+hiltNavigation = "1.2.0"
+ksp = "1.9.0-1.0.13"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -25,7 +29,16 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
+#hilt
+hiltCompiler = {module = "com.google.dagger:hilt-android-compiler", name="hiltCompiler", version.ref="hilt"} #kapt
+hiltAndroid = {module ="com.google.dagger:hilt-android", name="hiltAndroid", version.ref = "hilt"}
+hiltNavigation = {module = "androidx.hilt:hilt-navigation-compose", name = "hiltNavigation", version.ref = "hiltNavigation"}
+ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" } # Update to the latest version
+
+
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-
+hilt = {id ="com.google.dagger.hilt.android", version.ref ="hilt"}
+ksp = {id = "com.google.devtools.ksp", version.ref = "ksp"}

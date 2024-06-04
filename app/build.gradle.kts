@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -66,4 +68,12 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    //dagger hilt
+    //hilt
+    implementation(libs.hiltAndroid)
+    //hilt viewmodel
+    implementation(libs.hiltNavigation)
+    //ksp hilt compiler
+    ksp(libs.hiltCompiler)
 }

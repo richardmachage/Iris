@@ -25,8 +25,7 @@ class SmsReceiver : BroadcastReceiver() {
 
                     }
                 }
-                Log.d("receiver", "SMS received from ${myMessage.originatingAddress}: ${myMessage.body}")
-
+                //Log.d("receiver", "SMS received from ${myMessage.originatingAddress}: ${myMessage.body}")
             }
 
             //TODO
@@ -34,16 +33,32 @@ class SmsReceiver : BroadcastReceiver() {
             1.extract required info from the body
             2. save the info to local Room
            */
-            if (myMessage.originatingAddress == "MPESA"){
-                val mpesaDetails = extractMpesaDetails(myMessage.body)
-                Log.d("receiver", "SMS received from ${myMessage.originatingAddress}: ${myMessage.body}")
-
+            if (myMessage.originatingAddress == "MPESA") {
+                extractMpesaDetails(myMessage.body)?.let {
+                    Log.d(
+                        "receiver",
+                        "SMS received from ${myMessage.originatingAddress}: ${myMessage.body}"
+                    )
+                    Log.d("mpesa details", "Received from ${it.person}")
+                } ?: {
+                    Log.d("mpesa details", "mpesa details is null")
+                }
             }
+
+            /*Log.d("mpesa details", "Amount Received ${mpesaDetails.person}")
+            Log.d("mpesa details", "Balance ${mpesaDetails.balance}")
+            Log.d("mpesa details", "Type of transaction ${mpesaDetails.messageType}")
+            Log.d("mpesa details", "transaction code ${mpesaDetails.transactionCode}")
+            Log.d("mpesa details", "transaction cost ${mpesaDetails.transactionCost}")*/
+
         }
     }
 }
 
+
 fun extractMpesaDetails(message: String): MpesaDetails? {
+    Log.d("extract mpesa details", "function started")
+
     val sendRegex =
         """([A-Z0-9]+) Confirmed\. Ksh([\d,]+)\.00 sent to ([a-zA-Z\s]+) (\d{10}) on \d{1,2}/\d{1,2}/\d{2} at \d{1,2}:\d{2} (AM|PM)\. New M-PESA balance is Ksh([\d,]+)\.00\. Transaction cost, Ksh([\d,]+)\.00\.""".toRegex()
     val receiveRegex =
@@ -51,6 +66,8 @@ fun extractMpesaDetails(message: String): MpesaDetails? {
 
     return when {
         sendRegex.containsMatchIn(message) -> {
+            Log.d("extract mpesa details", "money sent")
+
             val matchResult = sendRegex.find(message)
             matchResult?.let {
                 val (transactionCode, amount, sentTo, sendToNumber, _, balance, transactionCost) = it.destructured
@@ -68,6 +85,7 @@ fun extractMpesaDetails(message: String): MpesaDetails? {
         }
 
         receiveRegex.containsMatchIn(message) -> {
+            Log.d("extract mpesa details", "money received")
             val matchResult = receiveRegex.find(message)
             matchResult?.let {
                 val (transactionCode, amount, receivedFrom, receivedFromNumber, _, balance, cents) = it.destructured
@@ -83,7 +101,17 @@ fun extractMpesaDetails(message: String): MpesaDetails? {
             }
         }
 
-        else -> null
+        else -> {
+            Log.d("extract mpesa details", "no regex")
+            MpesaDetails(
+                transactionCode = "none",
+                amount = 0.0,
+                person = "none",
+                personNumber = "none",
+                balance = 0.0,
+                messageType = "none"
+            )
+        }
     }
 
 }

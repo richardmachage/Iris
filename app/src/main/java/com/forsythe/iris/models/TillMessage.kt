@@ -1,6 +1,6 @@
 package com.forsythe.iris.models
 
-data class PaidMessage(
+data class TillMessage(
     val transactionId : String,
     val amountPaid : Double,
     val paidTo : String,

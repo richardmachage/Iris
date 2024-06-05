@@ -6,6 +6,9 @@ import android.content.Intent
 import android.provider.Telephony
 import android.util.Log
 import android.widget.Toast
+import com.forsythe.iris.constants.payBillRegexPattern
+import com.forsythe.iris.data.room.MessageRecord
+import com.forsythe.iris.models.PayBillMessage
 import com.forsythe.iris.models.TransactionType
 
 class SmsReceiver : BroadcastReceiver() {
@@ -36,17 +39,44 @@ class SmsReceiver : BroadcastReceiver() {
             2. save the info to local Room
            */
             var type : String?=null
+            var messageRecord : MessageRecord? = null
             if (myMessage.originatingAddress == "MPESA") {
                 when{
-                    myMessage.body.contains("sent to") && myMessage.body.contains("for account") -> type = TransactionType.payBill
+                    myMessage.body.contains("sent to") && myMessage.body.contains("for account") ->{
+                        //// type = TransactionType.payBill
+                        val matcher = payBillRegexPattern.matcher(myMessage.body)
+                        if (matcher.find()){
+                            val payBillMessage = PayBillMessage(
+                                transactionId = matcher.group(1)!!,
+                                amountSent = matcher.group(2)?.replace(",", "")!!.toDouble(),
+                                paidTo = matcher.group(3)!!.trim(),
+                                accountName = matcher.group(4)!!.trim(),
+                                date = matcher.group(5)!!,
+                                time = matcher.group(6)!!,
+                                newBalance = matcher.group(7)!!.replace(",", "").toDouble(),
+                                transactionCost = matcher.group(8)!!.replace(",", "").toDouble(),
+                                dailyLimit = matcher.group(9)!!.replace(",", "").toDouble()
+                            )
+
+                            messageRecord = MessageRecord(
+                                transactionCode = payBillMessage.transactionId,
+                                transactionType = TransactionType.payBill,
+                                amount = payBillMessage.amountSent,
+                                accountBalance = payBillMessage.newBalance,
+                                transactionCost = payBillMessage.transactionCost,
+                                timestamp = System.currentTimeMillis()
+                            )
+
+                        }
+                    }
                     myMessage.body.contains("sent to", ignoreCase = true) -> type = TransactionType.send
                     myMessage.body.contains("received", ignoreCase = true) -> type = TransactionType.receive
                     myMessage.body.contains("paid to", ignoreCase = true) -> type = TransactionType.till
                     else -> type =  TransactionType.none
                 }
             }
-            type?.let {
-                Log.d("Mpesa", "Transaction Type: $it")
+            messageRecord?.let {
+                Log.d("Mpesa", "Transaction Type: ${it.transactionType}")
             }?:{
                 Log.d("Mpesa", "Transaction Type: null")
             }

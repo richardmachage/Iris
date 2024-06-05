@@ -6,7 +6,7 @@ import java.sql.Date
 
 @Entity(tableName = "message_records_tbl")
 data class MessageRecord(
-    @PrimaryKey(autoGenerate = true) val recordId : Int ,
+    @PrimaryKey(autoGenerate = true) val recordId : Int = 0,
     val transactionCode : String,
     val transactionType : String,
     val amount : Double,

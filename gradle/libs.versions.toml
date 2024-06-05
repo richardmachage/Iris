@@ -11,6 +11,7 @@ composeBom = "2023.08.00"
 hilt = "2.50"
 hiltNavigation = "1.2.0"
 ksp = "1.9.0-1.0.13"
+room = "2.6.1"
 
 
 [libraries]
@@ -35,6 +36,9 @@ hiltAndroid = {module ="com.google.dagger:hilt-android", name="hiltAndroid", ver
 hiltNavigation = {module = "androidx.hilt:hilt-navigation-compose", name = "hiltNavigation", version.ref = "hiltNavigation"}
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" } # Update to the latest version
 
+#room database
+room = {module = "androidx.room:room-runtime", name = "roomDatabase",version.ref = "room"}
+roomCompiler = {module = "androidx.room:room-compiler", name = "roomCompiler", version.ref = "room"}
 
 
 [plugins]

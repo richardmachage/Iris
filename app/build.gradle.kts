@@ -76,4 +76,8 @@ dependencies {
     implementation(libs.hiltNavigation)
     //ksp hilt compiler
     ksp(libs.hiltCompiler)
+
+    //room database
+    implementation(libs.room)
+    ksp(libs.roomCompiler)
 }

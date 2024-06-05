@@ -79,5 +79,7 @@ dependencies {
 
     //room database
     implementation(libs.room)
+    implementation(libs.roomCoroutines)
     ksp(libs.roomCompiler)
+
 }

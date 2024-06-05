@@ -11,6 +11,6 @@ interface IrisDao {
     suspend fun insertMessageRecord(messageRecord: MessageRecord):Long
 
     @Query("SELECT * FROM message_records_tbl ORDER BY timestamp DESC")
-    suspend fun getAllMessageRecords() : Flow<List<MessageRecord>>
+    fun getAllMessageRecords() : Flow<List<MessageRecord>>
 
 }

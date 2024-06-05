@@ -39,6 +39,7 @@ ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = 
 #room database
 room = {module = "androidx.room:room-runtime", name = "roomDatabase",version.ref = "room"}
 roomCompiler = {module = "androidx.room:room-compiler", name = "roomCompiler", version.ref = "room"}
+roomCoroutines = {module = "androidx.room:room-ktx", name="roomCoroutines", version.ref ="room"}
 
 
 [plugins]

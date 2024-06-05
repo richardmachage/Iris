@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.util.foreignKeyCheck
 
+
 @Database(entities = [MessageRecord::class], version = 1)
 abstract class IrisDatabase : RoomDatabase() {
     abstract fun irisDao(): IrisDao

@@ -7,9 +7,14 @@ import android.provider.Telephony
 import android.util.Log
 import android.widget.Toast
 import com.forsythe.iris.constants.payBillRegexPattern
+import com.forsythe.iris.constants.receiveRgexPattern
+import com.forsythe.iris.constants.sendRegexPattern
 import com.forsythe.iris.data.room.MessageRecord
 import com.forsythe.iris.models.PayBillMessage
+import com.forsythe.iris.models.ReceiveMessage
+import com.forsythe.iris.models.SendMessage
 import com.forsythe.iris.models.TransactionType
+import java.nio.file.Files.find
 
 class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -42,7 +47,7 @@ class SmsReceiver : BroadcastReceiver() {
             var messageRecord : MessageRecord? = null
             if (myMessage.originatingAddress == "MPESA") {
                 when{
-                    myMessage.body.contains("sent to") && myMessage.body.contains("for account") ->{
+                    myMessage.body.contains("sent to", ignoreCase = true) && myMessage.body.contains("for account") ->{
                         //// type = TransactionType.payBill
                         val matcher = payBillRegexPattern.matcher(myMessage.body)
                         if (matcher.find()){
@@ -69,8 +74,46 @@ class SmsReceiver : BroadcastReceiver() {
 
                         }
                     }
-                    myMessage.body.contains("sent to", ignoreCase = true) -> type = TransactionType.send
-                    myMessage.body.contains("received", ignoreCase = true) -> type = TransactionType.receive
+                    myMessage.body.contains("sent to", ignoreCase = true) -> {
+                        //type = TransactionType.send
+                        val matcher = sendRegexPattern.matcher(myMessage.body)
+                        if (matcher.find()){
+                            val sendMessage = SendMessage(
+                                transactionId = matcher.group(1)!!,
+                                amountSent = matcher.group(2)!!.toDouble(),
+                                recipientName = matcher.group(3)!!,
+                                recipientPhoneNumber = matcher.group(4)!!,
+                                dateTime = "${matcher.group(5)} ${matcher.group(6)}",
+                                newMpesaBalance = matcher.group(7)!!.replace(",", "").toDouble(),
+                                transactionCost = matcher.group(8)!!.toDouble(),
+                                dailyTransactionLimit = matcher.group(9)!!.replace(",", "").toDouble()
+                            )
+
+                            messageRecord = MessageRecord(
+                                transactionCode = sendMessage.transactionId,
+                                transactionType = TransactionType.send,
+                                amount = sendMessage.amountSent,
+                                accountBalance = sendMessage.newMpesaBalance,
+                                transactionCost = sendMessage.transactionCost,
+                                timestamp = System.currentTimeMillis()
+                            )
+                        }
+                    }
+                    myMessage.body.contains("received", ignoreCase = true) -> {
+                    // type = TransactionType.receive
+                        val matcher = receiveRgexPattern.matcher(myMessage.body)
+                        if (matcher.find()){
+                            var receiveMessage = ReceiveMessage(
+                                transactionId = matcher.group(1)!!,
+                                amountReceived = matcher.group(2)!!.replace(",", "").toDouble(),
+                                senderName = matcher.group(3)!!,
+                                senderNumber = matcher.group(4)!!,
+                                date = matcher.group(5)!!,
+                                time = matcher.group(6)!!,
+                                newBalance = matcher.group(7)!!.replace(",", "").toDouble()
+                            )
+                        }
+                    }
                     myMessage.body.contains("paid to", ignoreCase = true) -> type = TransactionType.till
                     else -> type =  TransactionType.none
                 }

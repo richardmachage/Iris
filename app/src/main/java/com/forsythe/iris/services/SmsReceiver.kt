@@ -49,10 +49,13 @@ class SmsReceiver : BroadcastReceiver() {
             var messageRecord : MessageRecord? = null
             if (myMessage.originatingAddress == "MPESA") {
                 when{
-                    myMessage.body.contains("sent to", ignoreCase = true) && myMessage.body.contains("for account") ->{
+                    (myMessage.body.contains("sent to", ignoreCase = true) && myMessage.body.contains("for account", ignoreCase = true)) ->{
+                        Log.d("Mpesa", "message contains both \"sent to\"  and \"for account\" ")
                         //// type = TransactionType.payBill
                         val matcher = payBillRegexPattern.matcher(myMessage.body)
                         if (matcher.find()){
+                            Log.d("matcher", "message matches \"paybill\" pattern ")
+
                             val payBillMessage = PayBillMessage(
                                 transactionId = matcher.group(1)!!,
                                 amountSent = matcher.group(2)?.replace(",", "")!!.toDouble(),
@@ -75,22 +78,27 @@ class SmsReceiver : BroadcastReceiver() {
                             )
 
                         }
+                        else{
+                            Log.d("matcher", "message doesnt matche\"paybill\" patterns ")
+
+                        }
                     }
                     myMessage.body.contains("sent to", ignoreCase = true) -> {
+                        Log.d("Mpesa", "message contains  \"sent to\"  ")
                         //type = TransactionType.send
                         val matcher = sendRegexPattern.matcher(myMessage.body)
                         if (matcher.find()){
+                            Log.d("matcher", "message matches \"sent\" pattern ")
                             val sendMessage = SendMessage(
                                 transactionId = matcher.group(1)!!,
-                                amountSent = matcher.group(2)!!.toDouble(),
-                                recipientName = matcher.group(3)!!,
+                                amountSent = matcher.group(2)!!.replace(",", "").toDouble(),
+                                recipientName = matcher.group(3)!!.trim(),
                                 recipientPhoneNumber = matcher.group(4)!!,
                                 dateTime = "${matcher.group(5)} ${matcher.group(6)}",
                                 newMpesaBalance = matcher.group(7)!!.replace(",", "").toDouble(),
-                                transactionCost = matcher.group(8)!!.toDouble(),
+                                transactionCost = matcher.group(8)!!.replace(",", "").toDouble(),
                                 dailyTransactionLimit = matcher.group(9)!!.replace(",", "").toDouble()
                             )
-
                             messageRecord = MessageRecord(
                                 transactionCode = sendMessage.transactionId,
                                 transactionType = TransactionType.send,
@@ -100,11 +108,18 @@ class SmsReceiver : BroadcastReceiver() {
                                 timestamp = System.currentTimeMillis()
                             )
                         }
+                        else{
+                            Log.d("matcher", "message doesnt match \"sent\" pattern ")
+
+                        }
                     }
                     myMessage.body.contains("received", ignoreCase = true) -> {
-                    // type = TransactionType.receive
+                        Log.d("Mpesa", "message contains  \"received\"  ")
+                        // type = TransactionType.receive
                         val matcher = receiveRgexPattern.matcher(myMessage.body)
                         if (matcher.find()){
+                            Log.d("matcher", "message  matches \"received\" pattern ")
+
                             val receiveMessage = ReceiveMessage(
                                 transactionId = matcher.group(1)!!,
                                 amountReceived = matcher.group(2)!!.replace(",", "").toDouble(),
@@ -124,12 +139,19 @@ class SmsReceiver : BroadcastReceiver() {
                                 timestamp = System.currentTimeMillis()
                             )
                         }
+                        else{
+                            Log.d("matcher", "message doesnt match \"receive\" pattern ")
+                        }
 
                     }
                     myMessage.body.contains("paid to", ignoreCase = true) ->{
+                        Log.d("Mpesa", "message contains  \"paid to\"  ")
+
                         // type = TransactionType.till
                         val matcher = tillRegexPattern.matcher(myMessage.body)
                         if (matcher.find()){
+                            Log.d("matcher", "message matches \"till\" pattern ")
+
                             val tillMessage = TillMessage(
                                 transactionId = matcher.group(1)!!,
                                 amountPaid = matcher.group(2)!!.replace(",", "").toDouble(),
@@ -150,8 +172,23 @@ class SmsReceiver : BroadcastReceiver() {
                                 timestamp = System.currentTimeMillis()
                             )
                         }
+                        else{
+                            Log.d("matcher", "message doesn't match \"till\" pattern ")
+                        }
                     }
-                    else -> type =  TransactionType.none
+                    else -> {
+                        //type =  TransactionType.none
+                        Log.d("Mpesa", "message contains  \"none pattern\"  ")
+
+                        messageRecord = MessageRecord(
+                            transactionCode = "none",
+                            amount = 0.0,
+                            transactionType = TransactionType.none,
+                            accountBalance = 0.0,
+                            transactionCost =  0.0,
+                            timestamp = System.currentTimeMillis()
+                        )
+                    }
                 }
             }
             messageRecord?.let {

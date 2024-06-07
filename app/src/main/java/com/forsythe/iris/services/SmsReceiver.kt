@@ -9,10 +9,12 @@ import android.widget.Toast
 import com.forsythe.iris.constants.payBillRegexPattern
 import com.forsythe.iris.constants.receiveRgexPattern
 import com.forsythe.iris.constants.sendRegexPattern
+import com.forsythe.iris.constants.tillRegexPattern
 import com.forsythe.iris.data.room.MessageRecord
 import com.forsythe.iris.models.PayBillMessage
 import com.forsythe.iris.models.ReceiveMessage
 import com.forsythe.iris.models.SendMessage
+import com.forsythe.iris.models.TillMessage
 import com.forsythe.iris.models.TransactionType
 import java.nio.file.Files.find
 
@@ -103,7 +105,7 @@ class SmsReceiver : BroadcastReceiver() {
                     // type = TransactionType.receive
                         val matcher = receiveRgexPattern.matcher(myMessage.body)
                         if (matcher.find()){
-                            var receiveMessage = ReceiveMessage(
+                            val receiveMessage = ReceiveMessage(
                                 transactionId = matcher.group(1)!!,
                                 amountReceived = matcher.group(2)!!.replace(",", "").toDouble(),
                                 senderName = matcher.group(3)!!,
@@ -112,9 +114,43 @@ class SmsReceiver : BroadcastReceiver() {
                                 time = matcher.group(6)!!,
                                 newBalance = matcher.group(7)!!.replace(",", "").toDouble()
                             )
+
+                            messageRecord = MessageRecord(
+                                transactionCost = 0.0,
+                                transactionType = TransactionType.receive,
+                                transactionCode = receiveMessage.transactionId,
+                                amount = receiveMessage.amountReceived,
+                                accountBalance = receiveMessage.newBalance,
+                                timestamp = System.currentTimeMillis()
+                            )
+                        }
+
+                    }
+                    myMessage.body.contains("paid to", ignoreCase = true) ->{
+                        // type = TransactionType.till
+                        val matcher = tillRegexPattern.matcher(myMessage.body)
+                        if (matcher.find()){
+                            val tillMessage = TillMessage(
+                                transactionId = matcher.group(1)!!,
+                                amountPaid = matcher.group(2)!!.replace(",", "").toDouble(),
+                                paidTo = matcher.group(3)!!,
+                                date = matcher.group(4)!!,
+                                time = matcher.group(5)!!,
+                                newBalance = matcher.group(6)!!.replace(",", "").toDouble(),
+                                transactionCost = matcher.group(7)!!.replace(",", "").toDouble(),
+                                dailyLimit = matcher.group(8)!!.replace(",", "").toDouble()
+                            )
+
+                            messageRecord = MessageRecord(
+                                transactionCode = tillMessage.transactionId,
+                                amount = tillMessage.amountPaid,
+                                transactionType = TransactionType.till,
+                                accountBalance = tillMessage.newBalance,
+                                transactionCost = tillMessage.transactionCost,
+                                timestamp = System.currentTimeMillis()
+                            )
                         }
                     }
-                    myMessage.body.contains("paid to", ignoreCase = true) -> type = TransactionType.till
                     else -> type =  TransactionType.none
                 }
             }

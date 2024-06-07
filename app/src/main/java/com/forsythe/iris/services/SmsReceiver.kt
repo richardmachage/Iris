@@ -10,6 +10,7 @@ import com.forsythe.iris.constants.payBillRegexPattern
 import com.forsythe.iris.constants.receiveRgexPattern
 import com.forsythe.iris.constants.sendRegexPattern
 import com.forsythe.iris.constants.tillRegexPattern
+import com.forsythe.iris.data.room.IrisDao
 import com.forsythe.iris.data.room.IrisDatabase
 import com.forsythe.iris.data.room.MessageRecord
 import com.forsythe.iris.models.MyMessage
@@ -18,13 +19,16 @@ import com.forsythe.iris.models.ReceiveMessage
 import com.forsythe.iris.models.SendMessage
 import com.forsythe.iris.models.TillMessage
 import com.forsythe.iris.models.TransactionType
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.nio.file.Files.find
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class SmsReceiver (): BroadcastReceiver() {
+    @Inject lateinit var irisDao: IrisDao
     override fun onReceive(context: Context?, intent: Intent?) {
 
         //var messageBody : String? = null
@@ -192,9 +196,15 @@ class SmsReceiver (): BroadcastReceiver() {
 
             messageRecord?.let {
                 Log.d("Mpesa", "Transaction Type: ${it.transactionType}")
-                /*CoroutineScope(Dispatchers.IO).launch {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val insertRecord = irisDao.insertMessageRecord(it)
+                    if (insertRecord>0){
+                        Log.d("InsertRecord", "record insert success: ")
+                    }else{
+                        Log.d("InsertRecord", "failed to insert: ")
+                    }
+                }
 
-                }*/
             }?:{
                 Log.d("Mpesa", "Transaction Type: null")
             }

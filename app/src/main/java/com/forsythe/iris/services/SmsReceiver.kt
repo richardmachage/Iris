@@ -10,16 +10,23 @@ import com.forsythe.iris.constants.payBillRegexPattern
 import com.forsythe.iris.constants.receiveRgexPattern
 import com.forsythe.iris.constants.sendRegexPattern
 import com.forsythe.iris.constants.tillRegexPattern
+import com.forsythe.iris.data.room.IrisDatabase
 import com.forsythe.iris.data.room.MessageRecord
+import com.forsythe.iris.models.MyMessage
 import com.forsythe.iris.models.PayBillMessage
 import com.forsythe.iris.models.ReceiveMessage
 import com.forsythe.iris.models.SendMessage
 import com.forsythe.iris.models.TillMessage
 import com.forsythe.iris.models.TransactionType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.nio.file.Files.find
+import javax.inject.Inject
 
-class SmsReceiver : BroadcastReceiver() {
+class SmsReceiver (): BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
+
         //var messageBody : String? = null
         val myMessage = MyMessage()
         if (intent?.action == Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
@@ -182,8 +189,12 @@ class SmsReceiver : BroadcastReceiver() {
                     }
                 }
             }
+
             messageRecord?.let {
                 Log.d("Mpesa", "Transaction Type: ${it.transactionType}")
+                /*CoroutineScope(Dispatchers.IO).launch {
+
+                }*/
             }?:{
                 Log.d("Mpesa", "Transaction Type: null")
             }
@@ -193,18 +204,3 @@ class SmsReceiver : BroadcastReceiver() {
 }
 
 
-
-data class MpesaDetails(
-    val transactionCode: String,
-    val amount: Double,
-    val person: String,
-    val personNumber: String,
-    val balance: Double,
-    var transactionCost: Double = 0.0,
-    val messageType: String
-)
-
-data class MyMessage(
-    var body: String = "",
-    var originatingAddress: String = ""
-)

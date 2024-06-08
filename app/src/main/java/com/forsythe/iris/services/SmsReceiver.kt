@@ -125,7 +125,7 @@ class SmsReceiver (): BroadcastReceiver() {
                             val receiveMessage = ReceiveMessage(
                                 transactionId = matcher.group(1)!!,
                                 amountReceived = matcher.group(2)!!.replace(",", "").toDouble(),
-                                senderName = matcher.group(3)!!,
+                                senderName = matcher.group(3)!!.trim(),
                                 senderNumber = matcher.group(4)!!,
                                 date = matcher.group(5)!!,
                                 time = matcher.group(6)!!,

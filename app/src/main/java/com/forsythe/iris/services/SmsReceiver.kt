@@ -35,6 +35,7 @@ class SmsReceiver (): BroadcastReceiver() {
         val myMessage = MyMessage()
         if (intent?.action == Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
             Log.d("receiver", "broadcast fired")
+
             val bundle = intent.extras
             bundle?.let {
                 val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
@@ -43,6 +44,7 @@ class SmsReceiver (): BroadcastReceiver() {
                 for (sms in messages){
                     fullMessage.append(sms.messageBody)
                     myMessage.originatingAddress = sms.originatingAddress.toString()
+                   // subscriptionId = sms.serviceCenterAddress
                 }
                 myMessage.body = fullMessage.toString()
                 Log.d("receiver", "SMS received from ${myMessage.originatingAddress}: ${myMessage.body}")

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
+import android.provider.Telephony.Sms
 import android.util.Log
 import android.widget.Toast
 import com.forsythe.iris.constants.payBillRegexPattern
@@ -30,12 +31,21 @@ import javax.inject.Inject
 class SmsReceiver (): BroadcastReceiver() {
     @Inject lateinit var irisDao: IrisDao
     override fun onReceive(context: Context?, intent: Intent?) {
+        var subId : Int? = null
+        Sms.Intents.getMessagesFromIntent(intent)?.let {messages ->
+             subId = intent?.extras?.getInt("subscription",-1)?:-1
+            Log.d("receiver", "subscription Id = $subId")
 
+        }
         //var messageBody : String? = null
         val myMessage = MyMessage()
-        if (intent?.action == Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
+        if (intent?.action == Sms.Intents.SMS_RECEIVED_ACTION) {
             Log.d("receiver", "broadcast fired")
+            Sms.Intents.getMessagesFromIntent(intent)?.let {messages ->
+               // val subId = intent.extras?.getInt("subscription",-1)?:-1
+               // Log.d("receiver", "subscription Id = $subId")
 
+            }
             val bundle = intent.extras
             bundle?.let {
                 val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
@@ -47,7 +57,8 @@ class SmsReceiver (): BroadcastReceiver() {
                    // subscriptionId = sms.serviceCenterAddress
                 }
                 myMessage.body = fullMessage.toString()
-                Log.d("receiver", "SMS received from ${myMessage.originatingAddress}: ${myMessage.body}")
+
+                Log.d("receiver", "SMS received from ${myMessage.originatingAddress}: ${myMessage.body} subId = $subId")
             }
             var type : String?=null
             var messageRecord : MessageRecord? = null

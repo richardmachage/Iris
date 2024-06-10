@@ -66,6 +66,7 @@ fun HomeScreen(){
                             .padding(5.dp)
                         )
                         {
+                            Text(text = "My Sim: ${messageRecord.messageReceivedOn}")
                             Text(text = "transaction code: ${messageRecord.transactionCode}")
                             Text(text = "transaction type: ${messageRecord.transactionType}")
                             Text(text = "amount: ${messageRecord.amount}", fontWeight = FontWeight.Bold, fontSize = 20.sp)

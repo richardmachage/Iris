@@ -20,7 +20,9 @@ import com.forsythe.iris.models.ReceiveMessage
 import com.forsythe.iris.models.SendMessage
 import com.forsythe.iris.models.TillMessage
 import com.forsythe.iris.models.TransactionType
+import com.forsythe.iris.utils.getReceivingAddress
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,21 +33,16 @@ import javax.inject.Inject
 class SmsReceiver (): BroadcastReceiver() {
     @Inject lateinit var irisDao: IrisDao
     override fun onReceive(context: Context?, intent: Intent?) {
+        Log.d("receiver", "broadcast fired")
+
         var subId : Int? = null
-        Sms.Intents.getMessagesFromIntent(intent)?.let {messages ->
+        Sms.Intents.getMessagesFromIntent(intent)?.let {
              subId = intent?.extras?.getInt("subscription",-1)?:-1
             Log.d("receiver", "subscription Id = $subId")
-
         }
         //var messageBody : String? = null
-        val myMessage = MyMessage()
+        val myMessage = MyMessage(receivingAddress = getReceivingAddress(context = context!!, subscriptionId = subId?:-1))
         if (intent?.action == Sms.Intents.SMS_RECEIVED_ACTION) {
-            Log.d("receiver", "broadcast fired")
-            Sms.Intents.getMessagesFromIntent(intent)?.let {messages ->
-               // val subId = intent.extras?.getInt("subscription",-1)?:-1
-               // Log.d("receiver", "subscription Id = $subId")
-
-            }
             val bundle = intent.extras
             bundle?.let {
                 val messages = Sms.Intents.getMessagesFromIntent(intent)
@@ -60,7 +57,7 @@ class SmsReceiver (): BroadcastReceiver() {
 
                 Log.d("receiver", "SMS received from ${myMessage.originatingAddress}: ${myMessage.body} subId = $subId")
             }
-            var type : String?=null
+            //var type : String?=null
             var messageRecord : MessageRecord? = null
             if (myMessage.originatingAddress == "MPESA") {
                 when{
@@ -89,7 +86,8 @@ class SmsReceiver (): BroadcastReceiver() {
                                 amount = payBillMessage.amountSent,
                                 accountBalance = payBillMessage.newBalance,
                                 transactionCost = payBillMessage.transactionCost,
-                                timestamp = System.currentTimeMillis()
+                                timestamp = System.currentTimeMillis(),
+                                messageReceivedOn = myMessage.receivingAddress
                             )
 
                         }
@@ -120,7 +118,9 @@ class SmsReceiver (): BroadcastReceiver() {
                                 amount = sendMessage.amountSent,
                                 accountBalance = sendMessage.newMpesaBalance,
                                 transactionCost = sendMessage.transactionCost,
-                                timestamp = System.currentTimeMillis()
+                                timestamp = System.currentTimeMillis(),
+                                messageReceivedOn = myMessage.receivingAddress
+
                             )
                         }
                         else{
@@ -150,7 +150,9 @@ class SmsReceiver (): BroadcastReceiver() {
                                 transactionCode = receiveMessage.transactionId,
                                 amount = receiveMessage.amountReceived,
                                 accountBalance = receiveMessage.newBalance,
-                                timestamp = System.currentTimeMillis()
+                                timestamp = System.currentTimeMillis(),
+                                messageReceivedOn = myMessage.receivingAddress
+
                             )
                         }
                         else{
@@ -183,7 +185,9 @@ class SmsReceiver (): BroadcastReceiver() {
                                 transactionType = TransactionType.till,
                                 accountBalance = tillMessage.newBalance,
                                 transactionCost = tillMessage.transactionCost,
-                                timestamp = System.currentTimeMillis()
+                                timestamp = System.currentTimeMillis(),
+                                messageReceivedOn = myMessage.receivingAddress
+
                             )
                         }
                         else{
@@ -192,24 +196,26 @@ class SmsReceiver (): BroadcastReceiver() {
                     }
                     else -> {
                         //type =  TransactionType.none
-                        Log.d("Mpesa", "message contains  \"none pattern\"  ")
+                       // Log.d("Mpesa", "message contains  \"none pattern\"  ")
 
-                        messageRecord = MessageRecord(
+                       /* messageRecord = MessageRecord(
                             transactionCode = "none",
                             amount = 0.0,
                             transactionType = TransactionType.none,
                             accountBalance = 0.0,
                             transactionCost =  0.0,
-                            timestamp = System.currentTimeMillis()
-                        )
+                            timestamp = System.currentTimeMillis(),
+                            messageReceivedOn = null
+
+                        )*/
                     }
                 }
             }
 
-            messageRecord?.let {
-                Log.d("Mpesa", "Transaction Type: ${it.transactionType}")
+            messageRecord?.let {data->
+                Log.d("Mpesa", "Transaction Type: ${data.transactionType}")
                 CoroutineScope(Dispatchers.IO).launch {
-                    val insertRecord = irisDao.insertMessageRecord(it)
+                    val insertRecord = irisDao.insertMessageRecord(data)
                     if (insertRecord>0){
                         Log.d("InsertRecord", "record insert success: ")
                     }else{

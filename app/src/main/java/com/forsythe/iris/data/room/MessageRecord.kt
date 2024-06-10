@@ -12,5 +12,6 @@ data class MessageRecord(
     val amount : Double,
     val accountBalance : Double,
     val transactionCost : Double = 0.0,
-    val timestamp : Long
+    val timestamp : Long,
+    val messageReceivedOn : String? = null
 )

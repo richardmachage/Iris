@@ -1,4 +1,4 @@
-package com.forsythe.iris.ui.theme
+package com.forsythe.iris.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,13 +1,12 @@
 package com.forsythe.iris.di
 
 import android.content.Context
-import com.forsythe.iris.Application
+import com.forsythe.iris.app.Application
 import com.forsythe.iris.data.room.IrisDao
 import com.forsythe.iris.data.room.IrisDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton

@@ -1,4 +1,4 @@
-package com.forsythe.iris
+package com.forsythe.iris.app
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 

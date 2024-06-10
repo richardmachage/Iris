@@ -48,7 +48,7 @@ class SmsReceiver (): BroadcastReceiver() {
             }
             val bundle = intent.extras
             bundle?.let {
-                val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
+                val messages = Sms.Intents.getMessagesFromIntent(intent)
                 val fullMessage = StringBuilder()
 
                 for (sms in messages){

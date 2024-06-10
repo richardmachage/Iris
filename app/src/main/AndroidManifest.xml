@@ -22,7 +22,7 @@
         android:theme="@style/Theme.Iris"
         tools:targetApi="34">
         <activity
-            android:name=".MainActivity"
+            android:name=".app.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Iris">
             <intent-filter>

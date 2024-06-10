@@ -125,7 +125,6 @@ class SmsReceiver (): BroadcastReceiver() {
                         }
                         else{
                             Log.d("matcher", "message doesnt match \"sent\" pattern ")
-
                         }
                     }
                     myMessage.body.contains("received", ignoreCase = true) -> {

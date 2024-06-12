@@ -22,7 +22,7 @@ abstract class IrisDatabase : RoomDatabase() {
                         klass = IrisDatabase::class.java,
                         name = "iris_database"
                     )
-                        .fallbackToDestructiveMigrationFrom()
+                        .fallbackToDestructiveMigrationFrom(startVersions = intArrayOf(1))
                         .build()
                     INSTANCE = instance
                 }
